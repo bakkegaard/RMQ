@@ -1,15 +1,21 @@
 #include <iostream> //std::cout
 #include <cmath>
-#include <stdlib.h> //rand srand
+#include <cstdlib> //rand srand
 #include <algorithm> //min
+#include <cassert>
+#include <unistd.h> //sleep
+#include <chrono> //time
 
-#define SIZE 320
+#define MAX_INT 1000000009
 
-#define SPARSE_SIZE SIZE
+int SIZE = 16;
+//int SIZE = 4096;
+//int SIZE = 256;
+int TEST_SIZE=100000;
 
-#define MAX ((int) 0)-1
+int SPARSE_SIZE = SIZE;
 
-int A[SIZE+1];// = {9,4,8,3,7,2,6,1,5,0};
+int * A;// = {9,4,8,3,7,2,6,1,5,0};
 
 #include "util.cpp"
 
@@ -21,10 +27,10 @@ int A[SIZE+1];// = {9,4,8,3,7,2,6,1,5,0};
 
 #include "optimal.cpp"
 
-void generator(int r, int mode){
-	srand(r);
-	for(int i=1;i<=SIZE;i++){
-		A[i]=rand()%mode;
+void generator(int * R,int size){
+	int mode = 10;
+	for(int i=1;i<=size;i++){
+		R[i]=rand()%mode;
 	}
 }
 
@@ -38,31 +44,62 @@ void print(int A[]){
 }
 
 int main(int argc, char *argv[]){
+
+	//sparse::print();
+	for(int i=4;i<30;i+=4){
+		SIZE=power2(i);
+		A = (int *) malloc((SIZE+1)*sizeof(int));
+		srand(42);
+		A[0]=MAX_INT;
+		generator(A,SIZE);
+		auto start = std::chrono::steady_clock::now();
+		//constant::preprocess();
+		//sparse::preprocess(A);
+		optimal::preprocess();
+		auto end = std::chrono::steady_clock::now();
+		free(A);
+		std::cout << "constant on size: " << SIZE << ", time: "
+		<< std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+		<< " ns" << std::endl;
+	}
+	return 0;
 	
-	int seed = 42;
 
-	generator(seed,37);
 
-	print(A);
 
-	constant::preprocess();
-	sparse::preprocess();
 
-	sparse::print();
+
+
 
 	int error = 0;
+	int counter = 0;
 	for(int i=1;i<=SIZE;i++){
 		for(int j=i;j<=SIZE; j++){
-			int first = constant::RMQ(i,j);
-			int second =  sparse::RMQ(i,j);
+			//int first = sparse::RMQ(A,i,j);
+			int first = optimal::RMQ(i,j);
+			int second =  simple::RMQ(i,j);
 			if(first != second){
-				std::cout << "ERROR! " << std::endl;
-				std::cout << "i: " << i << ", j: " << j << ". constant: " << first << ", sparse: " << second << "\n";
+				std::cout << "ERROR! "
+				<< "i: " << i << ", j: " << j 
+				<< ". optimal: " << first << ", simple: " << second 
+				<< "\n";
 				error++;
 			}
+			counter++;
 		}
 	}
 	std::cout << error << std::endl;
+	std::cout << counter << std::endl;
+	//	 */
+	
+/*
+	int i = 3, j = 7;
+	std::cout << "i: " << i << ", j: " << j << std::endl;
+	int o = optimal::RMQ(i,j) ;
+	std::cout << "optimal: " << o << std::endl; 
+
+	std::cout << "simple: " << simple::RMQ(i,j) << std::endl;
+	// */
 
 	return 0;
 }
