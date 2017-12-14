@@ -51,13 +51,19 @@ namespace optimal{
 		return current_best;
 	}
 
-	void preprocess(){
+	void construct(){
 		//Calculate s, the block size
 		s = log2(SIZE)/4;
 
 		//Initialize arrays A_ and B_ with the number of blocks
 		A_ = (int *) malloc((SIZE/s+1)*sizeof(int));
 		B_ = (int *) malloc((SIZE/s+1)*sizeof(int));
+
+		SPARSE_SIZE=SIZE/s+1;
+		sparse::construct();
+	}
+
+	void preprocess(){
 		
 		//Go through each block
 		for(int i=1;i<=SIZE/s;i++){
@@ -79,21 +85,12 @@ namespace optimal{
 				B_[i] = minIndex;
 			}
 		}
-		SPARSE_SIZE=SIZE/s+1;
-		//std::cout << "A_=[";
-		//for(int i=1;i<=SIZE/s;i++){
-			//std::cout << ", " << A_[i];
-		//}
-		//std::cout << std::endl << "B_=[";
-		//for(int i=1;i<=SIZE/s;i++){
-			//std::cout << ", " << B_[i];
-		//}
-		std::cout << std::endl;
 		sparse::preprocess(A_);
 	}
 
 	void del(){
 		free(A_);
 		free(B_);
+		sparse::del();
 	}
 }

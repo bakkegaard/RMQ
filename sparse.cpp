@@ -35,9 +35,12 @@ namespace sparse{
 		}
 	}
 
-	void preprocess(int * A){
+	void construct(){
 		M_offset = log2(SPARSE_SIZE)+1;
 		M = (int *) malloc((SPARSE_SIZE+1)*(log2(SPARSE_SIZE)+1)*sizeof(int));
+	}
+
+	void preprocess(int * A){
 
 		for(int j=0;j<=log2(SPARSE_SIZE);j++){
 			for(int i=1;i<=SPARSE_SIZE;i++){

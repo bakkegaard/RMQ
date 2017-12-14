@@ -1,2 +1,2 @@
 all:
-	clang++ -std=c++11 -g main.cpp
+	clang++ -std=c++11 -O3 -g main.cpp

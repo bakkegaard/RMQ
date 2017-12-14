@@ -8,12 +8,9 @@
 
 #define MAX_INT 1000000009
 
-int SIZE = 16;
-//int SIZE = 4096;
-//int SIZE = 256;
-int TEST_SIZE=100000;
+int SIZE;
 
-int SPARSE_SIZE = SIZE;
+int SPARSE_SIZE;
 
 int * A;// = {9,4,8,3,7,2,6,1,5,0};
 
@@ -27,8 +24,7 @@ int * A;// = {9,4,8,3,7,2,6,1,5,0};
 
 #include "optimal.cpp"
 
-void generator(int * R,int size){
-	int mode = 10;
+void generator(int * R,int size,int mode){
 	for(int i=1;i<=size;i++){
 		R[i]=rand()%mode;
 	}
@@ -45,61 +41,101 @@ void print(int A[]){
 
 int main(int argc, char *argv[]){
 
-	//sparse::print();
-	for(int i=4;i<30;i+=4){
-		SIZE=power2(i);
+	/*
+
+	std::string s;
+	//s = "Constant";
+	//s = "Sparse";
+	s = "Optimal";
+
+	std::cout << s << std::endl;
+	std::cout << "size, time (in ns)" << std::endl;
+
+	for(int i=1;i<10;i++){
+		SIZE = power2(4*i);
+		SPARSE_SIZE = SIZE;
 		A = (int *) malloc((SIZE+1)*sizeof(int));
 		srand(42);
 		A[0]=MAX_INT;
 		generator(A,SIZE);
+
+		//constant::construct();
+		//sparse::construct();
+		optimal::construct();
+
 		auto start = std::chrono::steady_clock::now();
+
 		//constant::preprocess();
+
 		//sparse::preprocess(A);
+		
 		optimal::preprocess();
+		
 		auto end = std::chrono::steady_clock::now();
+		std::cout << SIZE << ", "
+			<< std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+			<< std::endl;
 		free(A);
-		std::cout << "constant on size: " << SIZE << ", time: "
-		<< std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
-		<< " ns" << std::endl;
+		//constant::del();
+		//sparse::del();
+		optimal::del();
 	}
-	return 0;
-	
+	*/
 
 
+	std::string s;
+	//s = "Simple";
+	//s = "Constant";
+	//s = "Sparse";
+	s = "Optimal";
+	std::cout << s << std::endl;
+	std::cout << "size, time (in ns)" << std::endl;
 
+	for(int i=1;i<10;i++){
+		SIZE = power2(i*4);
+		SPARSE_SIZE = SIZE;
+		A = (int *) malloc((SIZE+1)*sizeof(int));
+		A[0]=MAX_INT;
+		generator(A,SIZE,104729);
 
-
-
-
-	int error = 0;
-	int counter = 0;
-	for(int i=1;i<=SIZE;i++){
-		for(int j=i;j<=SIZE; j++){
-			//int first = sparse::RMQ(A,i,j);
-			int first = optimal::RMQ(i,j);
-			int second =  simple::RMQ(i,j);
-			if(first != second){
-				std::cout << "ERROR! "
-				<< "i: " << i << ", j: " << j 
-				<< ". optimal: " << first << ", simple: " << second 
-				<< "\n";
-				error++;
-			}
-			counter++;
+		srand(42);
+		int * test = (int *) malloc((1+200000)*sizeof(int));
+		generator(test,200000,SIZE-1);
+		
+		for(int j=1;j<=200000;j++){
+			test[j]+=1;
 		}
+		for(int j=1;j<=200000;j+=2){
+			if(test[j]>test[j+1]){
+				int temp = test[j];
+				test[j] = test[j+1];
+				test[j+1]=temp;
+			}
+		}
+		
+		//constant::construct();
+		//constant::preprocess();
+		
+		//sparse::construct();
+		//sparse::preprocess(A);
+
+		optimal::construct();
+		optimal::preprocess();
+
+		int sum=0;
+		auto start = std::chrono::steady_clock::now();
+		for(int j=1;j<=200000;j+=2){
+			//std::cout << test[j] << " " << test[j+1] << std::endl;
+			 sum += optimal::RMQ(test[j],test[j+1]);
+		}
+		auto end = std::chrono::steady_clock::now();
+		std::cout << SIZE << ", "
+			<< std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+			<< ", " << sum
+			<< std::endl;
+		free(A);
+		//constant::del();
+		//sparse::del();
+		optimal::del();
 	}
-	std::cout << error << std::endl;
-	std::cout << counter << std::endl;
-	//	 */
-	
-/*
-	int i = 3, j = 7;
-	std::cout << "i: " << i << ", j: " << j << std::endl;
-	int o = optimal::RMQ(i,j) ;
-	std::cout << "optimal: " << o << std::endl; 
-
-	std::cout << "simple: " << simple::RMQ(i,j) << std::endl;
-	// */
-
-	return 0;
 }
